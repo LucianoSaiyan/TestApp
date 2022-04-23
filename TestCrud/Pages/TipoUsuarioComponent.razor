@@ -1,0 +1,129 @@
+﻿@page "/tipoUsuarioComponent"
+<h3>Tipo Usuario </h3>
+
+
+<td><button @onclick="() => SeleccionarTipoUsuario()"><span class="fa fa-trash" style="font-size:25px" data-toggle="tooltip" title="Agregar"></span>Nuevo Usuario</button></td>
+
+@if (TiposUsuario != null)
+{
+    <div>
+        <div class="row">
+            <div class="col-md-3 align-items-center d-flex">
+                <p>IdTipoUsuario</p>
+            </div>
+            <div class="col-md-6">
+                <input type="text" Name="IdTipoUsuario" @bind-value="@TiposUsuario.IdTipoUsuario" />
+            </div>
+        </div><br />
+        <div class="row">
+            <div class="col-md-3 align-items-center d-flex">
+                <p>DescripcionTipo</p>
+            </div>
+            <div class="col-md-6">
+                <input type="text" Name="DescripcionTipo" @bind-value="@TiposUsuario.DescripcionTipo" />
+            </div>
+        </div><br />
+        <div>
+            @if (!showingresar)
+            {
+                <button type="submit" style="text-align:center" @onclick="@(()=> InsertUsuarios())">Agregar Tipos de Usuario</button>
+            }
+            else
+            {
+                <button type="submit" style="text-align:center" @onclick="@(()=> UpdateUsuarios())">Editar Tipos de Usuario</button>
+            }
+        </div>
+    </div>
+    <div><h3>@messageresponse</h3></div>
+}
+
+
+@if (ListTiposUsuario == null)
+{
+    <div class="jumbotron-fluid" style="width:500PX;background-color:blanchedalmond">
+        <div class="spinner-grow" style="width:200PX"></div><text>Cargando......</text>
+    </div>
+}
+else
+{
+    <div class="col-12" style="font-family:'Times New Roman', Times, serif">
+        <table class="table table-bordered table-hover table-dark">
+            @if (ListTiposUsuario != null && ListTiposUsuario != null)
+            {
+                <tr class="col-sm-5">
+                    <td>IdTipoUsuario</td>
+                    <td>DescripcionTipo</td>
+                </tr>
+                @foreach (var item in ListTiposUsuario)
+                {
+        <tr>
+            <td>@item.IdTipoUsuario</td>
+            <td>@item.DescripcionTipo</td>
+            <td><button @onclick="() => SeleccionarTipoUsuario(item)"><span class="fa fa-trash" style="font-size:25px" data-toggle="tooltip" title="Editar @item.DescripcionTipo"></span>Editar @item.DescripcionTipo</button></td>
+        </tr>
+                }
+            }
+        </table>
+    </div>
+}
+
+
+@code {
+
+    public TipoUsuarioRepository tipoUsuarioRepository { get; set; }
+    List<TiposUsuario> ListTiposUsuario;
+    TiposUsuario TiposUsuario;
+    public bool showingresar { get; set; }
+    public string messageresponse { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            tipoUsuarioRepository = new TipoUsuarioRepository();
+            await GetAllTiposUsuarios();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    async Task GetAllTiposUsuarios()
+    {
+        var alltiposuser = await tipoUsuarioRepository.GetAll();
+        ListTiposUsuario = alltiposuser.ToList();
+    }
+
+    async Task<bool> InsertUsuarios()
+    {
+        tipoUsuarioRepository = new TipoUsuarioRepository();
+        var response = await tipoUsuarioRepository.Add(TiposUsuario);
+        var ret = response > 0;
+        if (ret)
+            await GetAllTiposUsuarios();
+        messageresponse = ret ? "El registro se actualizo con exito" : "Ocurrio un error";
+        return ret;
+    }
+
+    async Task<bool> UpdateUsuarios()
+    {
+        tipoUsuarioRepository = new TipoUsuarioRepository();
+        var response = await tipoUsuarioRepository.Update(TiposUsuario.IdTipoUsuario, TiposUsuario);
+        var ret = response > 0;
+        if (ret)
+            await GetAllTiposUsuarios();
+        messageresponse = ret ? "El registro se actualizo con exito" : "Ocurrio un error";
+        return ret;
+    }
+
+    void SeleccionarTipoUsuario(TiposUsuario tiposUsuario = null)
+    {
+        showingresar = (tiposUsuario != null);
+        TiposUsuario = tiposUsuario != null ? new TiposUsuario()
+        {
+            DescripcionTipo = tiposUsuario.DescripcionTipo
+        } : new TiposUsuario() { IdTipoUsuario = ListTiposUsuario.Max(i => i.IdTipoUsuario) + 1 };
+    }
+
+}

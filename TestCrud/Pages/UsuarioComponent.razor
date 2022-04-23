@@ -1,0 +1,141 @@
+﻿@page "/usuarioComponent"
+
+<h3>Usuario</h3>
+
+<td><button @onclick="() => SeleccionarUsuario()"><span class="fa fa-trash" style="font-size:25px" data-toggle="tooltip" title="Agregar"></span>Nuevo Usuario</button></td>
+
+@if (Usuario != null)
+{
+    <div>
+        <div class="row">
+            <div class="col-md-3 align-items-center d-flex">
+                <p>IdCliente</p>
+            </div>
+            <div class="col-md-6">
+                <input type="text" Name="IdUsuario" @bind-value="@Usuario.IdUsuario" />
+            </div>
+        </div><br />
+        <div class="row">
+            <div class="col-md-3 align-items-center d-flex">
+                <p>UserName</p>
+            </div>
+            <div class="col-md-6">
+                <input type="text" Name="UserName" @bind-value="@Usuario.UserName" />
+            </div>
+        </div><br />
+        <div class="row">
+            <div class="col-md-3 align-items-center d-flex">
+                <p>IdTipoUsuario</p>
+            </div>
+            <div class="col-md-6">
+                <input type="text" Name="IdTipoUsuario" @bind-value="@Usuario.IdTipoUsuario" />
+            </div>
+        </div><br />
+        <div>
+            @if (!showingresar)
+            {
+                <button type="submit" style="text-align:center" @onclick="@(()=> InsertUsuarios())">Agregar Usuario</button>
+            }
+            else
+            {
+                <button type="submit" style="text-align:center" @onclick="@(()=> UpdateUsuarios())">Editar Usuario</button>
+            }
+        </div>
+    </div>
+    <div><h3>@messageresponse</h3></div>
+}
+
+<br />
+
+@if (ListUsuario == null)
+{
+    <div class="jumbotron-fluid" style="width:500PX;background-color:blanchedalmond">
+        <div class="spinner-grow" style="width:200PX"></div><text>Cargando......</text>
+    </div>
+}
+else
+{
+    <div class="col-12" style="font-family:'Times New Roman', Times, serif">
+        <table class="table table-bordered table-hover table-dark">
+            @if (ListUsuario != null && ListUsuario != null)
+            {
+                <tr class="col-sm-5">
+                    <td>Id Tipo Usuario</td>
+                    <td>Descripcion Tipo</td>
+                    <td>Descripcion Tipo</td>
+                </tr>
+                @foreach (var item in ListUsuario)
+                {
+                    <tr>
+                        <td>@item.IdUsuario</td>
+                        <td>@item.UserName</td>
+                        <td>@item.IdTipoUsuario</td>
+                        <td><button @onclick="() => SeleccionarUsuario(item)"><span class="fa fa-trash" style="font-size:25px" data-toggle="tooltip" title="Editar @item.UserName"></span>Editar @item.UserName</button></td>
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+}
+
+
+@code {
+
+    public UsuarioRepository usuarioRepository { get; set; }
+    List<Usuario> ListUsuario;
+    Usuario Usuario;
+    public bool showingresar { get; set; }
+    public string messageresponse { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            usuarioRepository = new UsuarioRepository();
+            await GetAllUsuarios();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    async Task GetAllUsuarios()
+    {
+        var alluser = await usuarioRepository.GetAll();
+        ListUsuario = alluser.ToList();
+    }
+
+    async Task<bool> InsertUsuarios()
+    {
+        usuarioRepository = new UsuarioRepository();
+        var response = await usuarioRepository.Add(Usuario);
+        var ret = response > 0;
+        if (ret)
+            await GetAllUsuarios();
+        messageresponse = ret ? "El registro se actualizo con exito" : "Ocurrio un error";
+        return ret;
+    }
+
+    async Task<bool> UpdateUsuarios()
+    {
+        usuarioRepository = new UsuarioRepository();
+        var response = await usuarioRepository.Update(Usuario.IdUsuario, Usuario);
+        var ret = response > 0;
+        if (ret)
+            await GetAllUsuarios();
+        messageresponse = ret ? "El registro se actualizo con exito" : "Ocurrio un error";
+        return ret;
+    }
+
+    void SeleccionarUsuario(Usuario usuario = null)
+    {
+        showingresar = (usuario != null);
+        Usuario = usuario != null ? new Usuario()
+        {
+            IdUsuario = usuario.IdUsuario,
+            UserName = usuario.UserName,
+            IdTipoUsuario = usuario.IdTipoUsuario
+        } : new Usuario() { IdUsuario = ListUsuario.Max(i => i.IdUsuario) + 1 };
+    }
+}

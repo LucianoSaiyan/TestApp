@@ -1,0 +1,88 @@
+﻿@page "/Loguin"
+@inject NavigationManager nv
+@inject IJSRuntime js
+<h3>Loguin</h3>
+
+<div>
+    <div class="row">
+        <div class="col-md-3 align-items-center d-flex">
+            <p>Usuario</p>
+        </div>
+        <div class="col-md-6">
+            <input type="text" Name="IdTipoUsuario" @bind-value="@TUser.TxtUser" />
+        </div>
+    </div><br />
+    <div class="row">
+        <div class="col-md-3 align-items-center d-flex">
+            <p>Password</p>
+        </div>
+        <div class="col-md-6">
+            <input type="text" Name="Password" @bind-value="@TUser.TxtPassword" />
+        </div>
+    </div><br />
+    <div>
+        <button type="submit" style="text-align:center" @onclick="@(() => GetUsuario(TUser))">Confirme sus datos</button>
+    </div>
+</div>
+<div><h3>@messageresponse</h3></div>
+
+@code {
+
+    TUser TUser { get; set; }
+    public bool showingresar { get; set; }
+    public string messageresponse { get; set; }
+    TUserUsuarioRepository tuserRepository { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            tuserRepository = new TUserUsuarioRepository();
+            TUser = new TUser();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    void GetInstance(TUser user = null)
+    {
+        TUser = new TUser();
+    }
+
+    async Task GetUsuario(TUser usuario)
+    {
+        TUser = new TUser()
+        {
+            TxtUser = usuario.TxtUser,
+            TxtPassword = usuario.TxtPassword
+        };
+        await GetUsuarios(TUser);
+    }
+
+    async Task GetUsuarios(TUser usuario)
+    {
+        var response = await tuserRepository.Get(usuario);
+        var ret = response;
+        messageresponse = ret != null ? "Logueado Correctamente" : "El Usuario no existe";
+        if (ret != null)
+        {
+            await js.InvokeVoidAsync("show");
+            nv.NavigateTo($"{redirect(response.CodRol.Value)}");
+        }
+    }
+
+    string redirect(int codrol)
+    {
+        switch (codrol)
+        {
+            case 1:
+                return "/usuarioComponent";
+            case 2:
+                return "/Hola";
+            default:
+                return "";
+        }
+    }
+}

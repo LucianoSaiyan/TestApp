@@ -10,5 +10,7 @@ namespace DataBase.DB
         public int IdUsuario { get; set; }
         public string UserName { get; set; }
         public int? IdTipoUsuario { get; set; }
+
+        public virtual TiposUsuario IdTipoUsuarioNavigation { get; set; }
     }
 }

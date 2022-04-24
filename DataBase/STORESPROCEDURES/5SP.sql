@@ -19,9 +19,8 @@ GO
 -- Create date: <Create Date,,>
 -- Description:	<Description,,>
 -- =============================================
---4) Asignar géneros a películas, verificar que la película no tenga asignada el
---género previamente
-ALTER PROCEDURE AsignargenerosaPeliculas --1,3
+--5) Alquilar y Vender películas
+ALTER PROCEDURE AlquilarVender --1,3
 	@cod_genero int,	
 	@cod_pelicula int
 AS
